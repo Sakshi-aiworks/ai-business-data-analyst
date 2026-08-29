@@ -1,0 +1,13 @@
+Date,Product,Region,Sales,Quantity,Profit
+2026-01-05,Laptop,West,75000,5,12000
+2026-01-08,Monitor,North,30000,10,6000
+2026-01-15,Keyboard,South,15000,20,4000
+2026-01-20,Laptop,North,90000,6,15000
+2026-02-03,Monitor,West,45000,15,9000
+2026-02-10,Keyboard,East,18000,25,5000
+2026-02-18,Laptop,South,60000,4,10000
+2026-02-25,Monitor,North,50000,18,11000
+2026-03-05,Keyboard,West,22000,30,7000
+2026-03-12,Laptop,East,80000,5,14000
+2026-03-20,Monitor,South,35000,12,7000
+2026-03-25,Keyboard,North,20000,28,6000
