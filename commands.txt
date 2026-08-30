@@ -1,0 +1,73 @@
+"""to activate the vertual environment   """
+
+python -m venv .venv       
+.venv\Scripts\activate         
+---------------------------------------------------------------------------
+
+"" To Install  libraries""
+
+pip install pandas openpyxl
+---------------------------------------------------------------------------
+
+""Install the Ollama Python package""
+
+pip install ollama
+pip show ollama
+ollama --version
+---------------------------------------------------------------------------
+
+"" After downloding ollama , downlode the model ""
+
+ollama pull qwen2.5:3b
+ollama list                  -- to check that it is installed
+ollama run qwen2.5:3b
+---------------------------------------------------------------------------
+
+""After installing Git check""
+
+git --version
+---------------------------------------------------------------------------
+
+""Configure your Git identity""
+
+git config --global user.name "Sakshi"
+git config --global user.email "YOUR-PROFESSIONAL-GMAIL"
+---------------------------------------------------------------------------
+
+""Initialize Git""
+
+git init
+---------------------------------------------------------------------------
+
+""Check what Git sees""
+
+git status
+---------------------------------------------------------------------------
+
+""Add your project files""
+
+git add .
+git status
+---------------------------------------------------------------------------
+
+""Commit""
+
+git commit -m "Initial AI business data analyst agent"
+git status
+---------------------------------------------------------------------------
+
+""Connect Git to GitHub"" Add the GitHub remote""
+
+git remote add origin https://github.com/YOUR_USERNAME/ai-business-data-analyst.git
+git remote -v        --  to verify
+---------------------------------------------------------------------------
+
+""Rename the branch to main""
+
+git branch -M main
+---------------------------------------------------------------------------
+
+""Push to GitHub""
+
+git push -u origin main
+---------------------------------------------------------------------------
