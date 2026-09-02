@@ -1,39 +1,12 @@
 from ollama import chat
 
-from analysis import (
+from src.analysis import (
     total_sales,
     total_profit,
     top_product,
     sales_by_region,
     sales_by_product,
 )
-
-
-def check_question_scope(question):
-    """
-    Prevent the agent from answering questions about
-    information that is not available in the current dataset.
-    """
-
-    question = question.lower()
-
-    unsupported_topics = [
-        "customer",
-        "employee",
-        "salary",
-        "weather",
-        "supplier",
-        "vendor",
-        "inventory",
-        "order",
-        "location",
-    ]
-
-    for topic in unsupported_topics:
-        if topic in question:
-            return False
-
-    return True
 
 
 def create_tools(df):
@@ -155,15 +128,12 @@ def create_tools(df):
 def run_agent(df, question):
 
     # --------------------------------------------------
-    # 1. Safety / scope check
+    # 1. Read the actual dataset schema
     # --------------------------------------------------
 
-    if not check_question_scope(question):
-        return (
-            "I can't answer that from the available business data. "
-            "The current dataset does not contain the information "
-            "needed for this question."
-        )
+    columns = list(df.columns)
+
+    schema_text = ", ".join(columns)
 
     # --------------------------------------------------
     # 2. Create tools
@@ -175,37 +145,55 @@ def run_agent(df, question):
     # 3. Conversation for the LLM
     # --------------------------------------------------
 
-    messages = [
-        {
-            "role": "system",
-            "content": """
+    system_prompt = f"""
 You are an AI Business Data Analyst.
 
-Your job is to answer questions using the available
-business data and Python analysis tools.
+You answer questions using the uploaded business
+dataset and Python analysis tools.
+
+CURRENT DATASET COLUMNS:
+
+{schema_text}
 
 IMPORTANT RULES:
 
-1. Use a Python tool whenever the question requires
-   information from the business dataset.
+1. Only answer questions using information that can
+   be supported by the current dataset.
 
-2. Never invent numbers, names, customers, employees,
+2. The available dataset columns are:
+   {schema_text}
+
+3. Never invent numbers, names, customers, employees,
    products, regions, or other business information.
 
-3. "best product", "top product", "strongest product",
+4. If a question requires a column or information that
+   does not exist in the dataset, clearly say that the
+   information is not available.
+
+5. Use a Python analysis tool whenever the question
+   requires calculating information from the dataset.
+
+6. Never guess the result of a calculation.
+
+7. Only use information returned by the Python tools
+   when answering data-related questions.
+
+8. "best product", "top product", "strongest product",
    "highest-selling product", and "most successful product"
    mean the product with the highest total sales.
 
-4. Only use information returned by the Python tools
-   when answering data-related questions.
-
-5. If the available data does not contain the information
-   needed to answer the question, clearly say that the
-   information is not available.
-
-6. After receiving a tool result, explain the result
+9. After receiving a tool result, explain the result
    clearly and naturally.
-""",
+
+10. If the user's question is unrelated to the uploaded
+    business data, explain that you can only answer
+    questions supported by the uploaded dataset.
+"""
+
+    messages = [
+        {
+            "role": "system",
+            "content": system_prompt,
         },
         {
             "role": "user",
@@ -248,7 +236,7 @@ IMPORTANT RULES:
         result = function()
 
         # --------------------------------------------------
-        # 7. Add tool request and actual result to messages
+        # 7. Add tool request and actual result
         # --------------------------------------------------
 
         messages.append(response.message)

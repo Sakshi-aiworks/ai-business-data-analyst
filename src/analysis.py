@@ -1,3 +1,4 @@
+
 def total_sales(df):
     return df["Sales"].sum()
 
