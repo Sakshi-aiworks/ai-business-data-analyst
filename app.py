@@ -2,6 +2,15 @@ import streamlit as st
 import pandas as pd
 
 from src.agent import run_agent
+
+from src.analysis import (
+    total_sales,
+    total_profit,
+    top_product,
+    sales_by_region,
+    sales_by_product,
+)
+
 from src.schema import analyze_schema
 
 
@@ -17,13 +26,14 @@ st.set_page_config(
 
 
 # --------------------------------------------------
-# Title
+# Application Header
 # --------------------------------------------------
 
 st.title("🤖 AI Business Data Analyst")
 
 st.write(
-    "Upload your business data and ask questions using natural language."
+    "Upload your business data and ask questions "
+    "using natural language."
 )
 
 
@@ -40,25 +50,28 @@ uploaded_file = st.file_uploader(
 if uploaded_file is not None:
 
     # --------------------------------------------------
-    # Read CSV
+    # Load Dataset
     # --------------------------------------------------
 
-    if uploaded_file.name.lower().endswith(".csv"):
+    try:
 
-        df = pd.read_csv(uploaded_file)
+        if uploaded_file.name.lower().endswith(".csv"):
+            df = pd.read_csv(uploaded_file)
+        else:
+            df = pd.read_excel(uploaded_file)
 
-    # --------------------------------------------------
-    # Read Excel
-    # --------------------------------------------------
+        st.success(
+            f"✅ File uploaded successfully: "
+            f"{uploaded_file.name}"
+        )
 
-    else:
+    except Exception as e:
 
-        df = pd.read_excel(uploaded_file)
+        st.error(
+            f"❌ Could not read the uploaded file: {e}"
+        )
 
-
-    st.success(
-        f"✅ File uploaded successfully: {uploaded_file.name}"
-    )
+        st.stop()
 
 
     # --------------------------------------------------
@@ -72,11 +85,6 @@ if uploaded_file is not None:
         use_container_width=True
     )
 
-
-    # --------------------------------------------------
-    # Basic Dataset Information
-    # --------------------------------------------------
-
     st.write(
         f"**Rows:** {len(df)}  |  "
         f"**Columns:** {len(df.columns)}"
@@ -84,13 +92,166 @@ if uploaded_file is not None:
 
 
     # --------------------------------------------------
-    # Schema Analysis
+    # Business KPIs
+    # --------------------------------------------------
+
+    st.subheader("📈 Business KPIs")
+
+    kpi1, kpi2, kpi3, kpi4 = st.columns(4)
+
+
+    # Total Sales
+    with kpi1:
+
+        try:
+
+            sales = total_sales(df)
+
+            st.metric(
+                "Total Sales",
+                sales
+            )
+
+        except Exception:
+
+            st.metric(
+                "Total Sales",
+                "Unavailable"
+            )
+
+
+    # Total Profit
+    with kpi2:
+
+        try:
+
+            profit = total_profit(df)
+
+            st.metric(
+                "Total Profit",
+                profit
+            )
+
+        except Exception:
+
+            st.metric(
+                "Total Profit",
+                "Unavailable"
+            )
+
+
+    # Top Product
+    with kpi3:
+
+        try:
+
+            product = top_product(df)
+
+            st.metric(
+                "Top Product",
+                product
+            )
+
+        except Exception:
+
+            st.metric(
+                "Top Product",
+                "Unavailable"
+            )
+
+
+    # Top Region
+    with kpi4:
+
+        try:
+
+            region_sales = sales_by_region(df)
+
+            top_region = region_sales.idxmax()
+
+            st.metric(
+                "Top Region",
+                top_region
+            )
+
+        except Exception:
+
+            st.metric(
+                "Top Region",
+                "Unavailable"
+            )
+
+
+    # --------------------------------------------------
+    # Charts
+    # --------------------------------------------------
+
+    st.subheader("📊 Business Insights")
+
+    chart_col1, chart_col2 = st.columns(2)
+
+
+    # --------------------------------------------------
+    # Sales by Region
+    # --------------------------------------------------
+
+    with chart_col1:
+
+        st.write("### 🌍 Sales by Region")
+
+        try:
+
+            region_data = sales_by_region(df)
+
+            region_chart = region_data.sort_values(
+                ascending=False
+            )
+
+            st.bar_chart(
+                region_chart
+            )
+
+        except Exception:
+
+            st.info(
+                "Regional sales data is not available."
+            )
+
+
+    # --------------------------------------------------
+    # Sales by Product
+    # --------------------------------------------------
+
+    with chart_col2:
+
+        st.write("### 📦 Sales by Product")
+
+        try:
+
+            product_data = sales_by_product(df)
+
+            product_chart = product_data.sort_values(
+                ascending=False
+            )
+
+            st.bar_chart(
+                product_chart
+            )
+
+        except Exception:
+
+            st.info(
+                "Product sales data is not available."
+            )
+
+
+    # --------------------------------------------------
+    # Dataset Schema
     # --------------------------------------------------
 
     schema = analyze_schema(df)
 
     st.subheader("🔍 Dataset Information")
-
 
     col1, col2 = st.columns(2)
 
@@ -124,6 +285,10 @@ if uploaded_file is not None:
         )
 
 
+    # --------------------------------------------------
+    # Available Columns
+    # --------------------------------------------------
+
     st.write(
         f"**Available columns:** "
         f"{', '.join(schema['column_names'])}"
@@ -140,7 +305,9 @@ if uploaded_file is not None:
             "⚠️ Some columns contain missing values."
         )
 
-        st.write(schema["missing_values"])
+        st.write(
+            schema["missing_values"]
+        )
 
     else:
 
@@ -150,20 +317,21 @@ if uploaded_file is not None:
 
 
     # --------------------------------------------------
-    # Question Section
+    # AI Data Analyst
     # --------------------------------------------------
 
     st.subheader("💬 Ask Your Data")
 
-
     question = st.text_input(
         "Ask a question about your uploaded data",
-        placeholder="Example: Which product sold the most?"
+        placeholder=(
+            "Example: Which product sold the most?"
+        )
     )
 
 
     # --------------------------------------------------
-    # Ask AI
+    # Ask AI Button
     # --------------------------------------------------
 
     if st.button("🤖 Ask AI"):
