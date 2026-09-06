@@ -9,6 +9,7 @@ from src.analysis import (
     top_product,
     sales_by_region,
     sales_by_product,
+    sales_over_time,
 )
 
 from src.schema import analyze_schema
@@ -57,6 +58,7 @@ if uploaded_file is not None:
 
         if uploaded_file.name.lower().endswith(".csv"):
             df = pd.read_csv(uploaded_file)
+
         else:
             df = pd.read_excel(uploaded_file)
 
@@ -165,9 +167,9 @@ if uploaded_file is not None:
 
         try:
 
-            region_sales = sales_by_region(df)
+            region_data = sales_by_region(df)
 
-            top_region = region_sales.idxmax()
+            top_region = region_data.idxmax()
 
             st.metric(
                 "Top Region",
@@ -183,7 +185,7 @@ if uploaded_file is not None:
 
 
     # --------------------------------------------------
-    # Charts
+    # Business Charts
     # --------------------------------------------------
 
     st.subheader("📊 Business Insights")
@@ -243,6 +245,29 @@ if uploaded_file is not None:
             st.info(
                 "Product sales data is not available."
             )
+
+
+    # --------------------------------------------------
+    # Sales Trend
+    # --------------------------------------------------
+
+    st.write("### 📈 Sales Trend")
+
+    try:
+
+        trend_data = sales_over_time(df)
+
+        st.line_chart(
+            trend_data
+        )
+
+    except Exception:
+
+        st.info(
+            "📅 Sales trend is not available because "
+            "the dataset does not contain usable date "
+            "and sales information."
+        )
 
 
     # --------------------------------------------------
@@ -331,7 +356,7 @@ if uploaded_file is not None:
 
 
     # --------------------------------------------------
-    # Ask AI Button
+    # Ask AI
     # --------------------------------------------------
 
     if st.button("🤖 Ask AI"):
